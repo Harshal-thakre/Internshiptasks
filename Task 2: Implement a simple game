@@ -1,0 +1,86 @@
+import java.util.Scanner;
+
+public class HangmanGame {
+    private static final String[] WORDS = {"apple", "banana", "orange", "grape", "kiwi"};
+    private static final int MAX_TRIES = 6;
+
+    private String secretWord;
+    private StringBuilder guessedWord;
+    private int triesLeft;
+    private StringBuilder guessedLetters;
+
+    public HangmanGame() {
+        secretWord = generateSecretWord();
+        guessedWord = new StringBuilder("_".repeat(secretWord.length()));
+        triesLeft = MAX_TRIES;
+        guessedLetters = new StringBuilder();
+    }
+
+    public void play() {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("Welcome to Hangman!");
+        System.out.println("Guess the word by entering one letter at a time.");
+        System.out.println("You have " + MAX_TRIES + " tries to guess the word.");
+
+        while (triesLeft > 0 && guessedWord.toString().contains("_")) {
+            System.out.println();
+            System.out.println("Word: " + guessedWord);
+            System.out.println("Tries left: " + triesLeft);
+            System.out.println("Guessed letters: " + guessedLetters);
+            System.out.print("Enter a letter: ");
+            String guess = scanner.nextLine().toLowerCase();
+
+            if (guess.length() != 1 || !Character.isLetter(guess.charAt(0))) {
+                System.out.println("Invalid input. Please enter a single letter.");
+                continue;
+            }
+
+            char letter = guess.charAt(0);
+
+            if (guessedLetters.toString().contains(guess)) {
+                System.out.println("You already guessed that letter. Try again.");
+                continue;
+            }
+
+            guessedLetters.append(letter);
+
+            if (secretWord.contains(guess)) {
+                updateGuessedWord(letter);
+                System.out.println("Correct guess!");
+            } else {
+                triesLeft--;
+                System.out.println("Wrong guess! Tries left: " + triesLeft);
+            }
+        }
+
+        System.out.println();
+        System.out.println("The word was: " + secretWord);
+
+        if (guessedWord.toString().contains("_")) {
+            System.out.println("Sorry, you lost!");
+        } else {
+            System.out.println("Congratulations, you won!");
+        }
+
+        scanner.close();
+    }
+
+    private String generateSecretWord() {
+        int randomIndex = (int) (Math.random() * WORDS.length);
+        return WORDS[randomIndex];
+    }
+
+    private void updateGuessedWord(char letter) {
+        for (int i = 0; i < secretWord.length(); i++) {
+            if (secretWord.charAt(i) == letter) {
+                guessedWord.setCharAt(i, letter);
+            }
+        }
+    }
+
+    public static void main(String[] args) {
+        HangmanGame game = new HangmanGame();
+        game.play();
+    }
+}
