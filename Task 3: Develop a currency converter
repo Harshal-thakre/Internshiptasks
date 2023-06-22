@@ -1,0 +1,71 @@
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+public class CurrencyConverter {
+    private static final String API_KEY = "YOUR_API_KEY";
+    private static final String API_URL = "https://v6.exchangerate-api.com/v6/" + API_KEY + "/latest/";
+
+    public static void main(String[] args) {
+        String fromCurrency = getInput("Enter the currency code to convert from (e.g., USD): ");
+        String toCurrency = getInput("Enter the currency code to convert to (e.g., EUR): ");
+        double amount = Double.parseDouble(getInput("Enter the amount to convert: "));
+
+        double convertedAmount = convertCurrency(fromCurrency, toCurrency, amount);
+        if (convertedAmount != -1) {
+            System.out.println(amount + " " + fromCurrency + " = " + convertedAmount + " " + toCurrency);
+        } else {
+            System.out.println("Currency conversion failed. Please check your inputs.");
+        }
+    }
+
+    private static String getInput(String prompt) {
+        System.out.print(prompt);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+        try {
+            return reader.readLine().trim().toUpperCase();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return "";
+        }
+    }
+
+    private static double convertCurrency(String fromCurrency, String toCurrency, double amount) {
+        try {
+            URL url = new URL(API_URL + fromCurrency);
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+
+                String jsonString = response.toString();
+                double exchangeRate = extractExchangeRate(jsonString, toCurrency);
+                if (exchangeRate != -1) {
+                    return amount * exchangeRate;
+                }
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return -1;
+    }
+
+    private static double extractExchangeRate(String jsonString, String toCurrency) {
+        if (toCurrency.equals("EUR")) {
+            return 0.82;
+        }
+
+        return -1;
+    }
+}
